@@ -257,6 +257,7 @@ public:
     Iterator begin_iterator;
     begin_iterator.list_ptr = this;
     begin_iterator.node_ptr = this->first;
+    return begin_iterator;
   }
 
   // return an Iterator pointing to "past the end"
