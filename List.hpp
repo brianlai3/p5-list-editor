@@ -16,41 +16,121 @@ class List {
   //OVERVIEW: a doubly-linked, double-ended list with Iterator interface
 public:
 
+  // Default Contructor, make empty list
+  List() : num_nodes(0) {}
+
+  // Copy constructor
+  List(const List<T> &other) : num_nodes(other.num_nodes){
+    copy_all(other);
+  }
+
+  // Assignment operator
+
+  // Destructor, clean up all nodes
+  ~List(){
+    clear();
+  }
+
+
+
   //EFFECTS:  returns true if the list is empty
-  bool empty() const;
+  bool empty() const{return size() == 0;}
 
   //EFFECTS: returns the number of elements in this List
   //HINT:    Traversing a list is really slow. Instead, keep track of the size
   //         with a private member variable. That's how std::list does it.
-  int size() const;
+  int size() const {return num_nodes;}
 
   //REQUIRES: list is not empty
   //EFFECTS: Returns the first element in the list by reference
-  T & front();
+  T & front() {return first->datum;}
 
   //REQUIRES: list is not empty
   //EFFECTS: Returns the last element in the list by reference
-  T & back();
+  T & back() {return last->datum;}
 
   //EFFECTS:  inserts datum into the front of the list
-  void push_front(const T &datum);
+  void push_front(const T &datum){
+    // set up new first node
+    Node new_first_node = new Node;
+    new_first_node->next = first;
+    new_first_node->prev = nullptr;
+    new_first_node->datum = datum;
+    // repoint prev of old first node
+    first->prev = new_first_node;
+    // repoint first
+    first = &new_first_node;
+    // if list was empty, repoint last to new_first_node
+    if(empty()){last = &new_first_node;}
+    // update number of nodes
+    num_nodes++;
+  }
 
   //EFFECTS:  inserts datum into the back of the list
-  void push_back(const T &datum);
+  void push_back(const T &datum){
+    // set up new last node
+    Node new_last_node = new Node;
+    new_last_node->next = nullptr;
+    new_last_node->prev = last;
+    new_last_node->datum = datum;
+    // repoint next of old last node
+    last->next = new_last_node;
+    // repoint last
+    last = &new_last_node;
+    // if list was empty, repoint last to new_last_node
+    if(empty()){last = &new_first_node;}
+    // update number of nodes
+    num_nodes++;
+  }
 
   //REQUIRES: list is not empty
   //MODIFIES: may invalidate list iterators
   //EFFECTS:  removes the item at the front of the list
-  void pop_front();
+  void pop_front(){
+    if(num_nodes == 1){
+      // convert to empty list
+      delete first;
+      first = nullptr;
+      last = nullptr;
+    } else{
+      // repoint first and delete old first
+      Node old_first = first;
+      first = first->next;
+      delete old_first;
+      // repoint prev of first
+      first->prev = nullptr;
+    }
+    num_nodes--;
+  }
 
   //REQUIRES: list is not empty
   //MODIFIES: may invalidate list iterators
   //EFFECTS:  removes the item at the back of the list
-  void pop_back();
+  void pop_back(){
+    if(num_nodes == 1){
+      // convert to empty list
+      delete last;
+      first = nullptr;
+      last = nullptr;
+    } else{
+      // repoint last and delete old last
+      Node old_last = last;
+      last = last->prev;
+      delete old_last;
+      // repoint next of last
+      last->next = nullptr;
+    }
+    num_nodes--;
+  }
 
   //MODIFIES: may invalidate list iterators
   //EFFECTS:  removes all items from the list
-  void clear();
+  void clear(){
+    while(num_nodes > 0){
+      pop_front();
+      num_nodes--;
+    }
+  }
 
   // You should add in a default constructor, destructor, copy constructor,
   // and overloaded assignment operator, if appropriate. If these operations
@@ -71,6 +151,7 @@ private:
 
   Node *first;   // points to first Node in list, or nullptr if list is empty
   Node *last;    // points to last Node in list, or nullptr if list is empty
+  int num_nodes; // size of the list (number of nodes)
 
 public:
   ////////////////////////////////////////
@@ -163,7 +244,7 @@ public:
 
 
     // add any friend declarations here
-
+    friend class List;
 
     // construct an Iterator at a specific position in the given List
     Iterator(const List *lp, Node *np);
@@ -172,7 +253,11 @@ public:
   ////////////////////////////////////////
 
   // return an Iterator pointing to the first element
-  Iterator begin() const;
+  Iterator begin() const{
+    Iterator begin_iterator;
+    begin_iterator.list_ptr = this;
+    begin_iterator.node_ptr = this->first;
+  }
 
   // return an Iterator pointing to "past the end"
   Iterator end() const;
